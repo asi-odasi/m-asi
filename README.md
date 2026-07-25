@@ -138,9 +138,6 @@ MSSQL_USER=sa
 MSSQL_PASSWORD=YourStrong!Password123
 MSSQL_ENCRYPT=no
 MSSQL_TRUST_SERVER_CERTIFICATE=yes
-
-# Vektörel Filtreleme Parametreleri
-SIMILARITY_THRESHOLD=0.75
 ```
 
 ---
