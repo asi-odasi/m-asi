@@ -114,35 +114,7 @@ gantt
 
 ---
 
-### 🔑 1. Ortam Değişkenlerinin Yapılandırılması (.env)
-
-> [!IMPORTANT]
-> Projenin sorunsuz çalışabilmesi için kök dizinde `.env` dosyasının doğru bilgilerle oluşturulması **kritik öneme sahiptir**. `LLM_API_KEY` olmadan vektörel analiz servisi çalışmayacak ve hata verecektir.
-
-Projeyi klonladıktan sonra kök dizindeki `.env.example` dosyasını `.env` olarak kopyalayın ve gerekli alanları doldurun:
-
-```bash
-cp .env.example .env
-```
-
-`.env` içeriği aşağıdaki gibidir:
-
-```env
-# Google Gemini API Konfigürasyonu
-LLM_API_KEY=your_google_gemini_api_key_here
-
-# MS SQL Server Bağlantı Bilgileri (Docker)
-MSSQL_SERVER=localhost,1433
-MSSQL_DATABASE=m_asi_db
-MSSQL_USER=sa
-MSSQL_PASSWORD=YourStrong!Password123
-MSSQL_ENCRYPT=no
-MSSQL_TRUST_SERVER_CERTIFICATE=yes
-```
-
----
-
-### 🐳 2. Veritabanı Kurulumu (Docker MS SQL Server)
+### 🐳 1. Veritabanı Kurulumu (Docker MS SQL Server)
 
 MS SQL Server 2022 Docker container'ını başlatın:
 
@@ -162,7 +134,7 @@ sqlcmd -S localhost,1433 -U sa -P "YourStrong!Password123" -i backend/app/db/sch
 
 ---
 
-### ⚙️ 3. Backend ve Ingestion Pipeline Kurulumu
+### ⚙️ 2. Backend ve Ingestion Pipeline Kurulumu
 
 ```powershell
 # Backend dizinine geçin
@@ -184,7 +156,7 @@ uvicorn app.main:app --reload --port 8000
 
 ---
 
-### 🎨 4. Frontend Kurulumu (Next.js)
+### 🎨 3. Frontend Kurulumu (Next.js)
 
 ```powershell
 # Frontend dizinine geçin
