@@ -1,5 +1,6 @@
 import type { ArticleDetail, ArticleListItem } from "@/types/article";
 import type { BulletinPage } from "@/types/huggingface";
+import type { KaggleDatasetSummary, KaggleSearchResponse } from "@/types/kaggle";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -49,5 +50,34 @@ export function setBulletinFavorite(id: string, isFavorite: boolean): Promise<{ 
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ isFavorite }),
+  });
+}
+
+export function searchKaggleDatasets(query: string, page: number): Promise<KaggleSearchResponse> {
+  const params = new URLSearchParams({ query, page: String(page) });
+  return apiFetch<KaggleSearchResponse>(`/kaggle/datasets?${params}`);
+}
+
+export function getKaggleFavorites(): Promise<KaggleDatasetSummary[]> {
+  return apiFetch<KaggleDatasetSummary[]>("/kaggle/favorites");
+}
+
+export function setKaggleFavorite(
+  dataset: KaggleDatasetSummary,
+  isFavorite: boolean,
+): Promise<{ ref: string; isFavorite: boolean }> {
+  return apiFetch<{ ref: string; isFavorite: boolean }>(`/kaggle/favorites/${dataset.ref}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      isFavorite,
+      title: dataset.title,
+      subtitle: dataset.subtitle,
+      url: dataset.url,
+      ownerName: dataset.owner_name,
+      voteCount: dataset.vote_count,
+      downloadCount: dataset.download_count,
+      lastUpdated: dataset.last_updated,
+    }),
   });
 }

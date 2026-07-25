@@ -28,6 +28,11 @@ class Settings(BaseSettings):
     hf_dataset_config: str = "default"
     hf_dataset_split: str = "train"
 
+    # Kaggle
+    kaggle_username: str = ""
+    kaggle_key: str = ""
+    kaggle_default_query: str = "Turkish fake news"
+
     # MS SQL
     db_server: str = "localhost"
     db_port: int = 1433

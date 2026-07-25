@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import articles, health, huggingface
+from app.api.routes import articles, health, huggingface, kaggle
 from app.core.config import get_settings
 from app.core.logging import configure_logging
 
@@ -29,3 +29,4 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(articles.router)
 app.include_router(huggingface.router)
+app.include_router(kaggle.router)

@@ -82,6 +82,23 @@ class BulletinFavorite(Base):
     CreatedAt: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
 
 
+class KaggleFavorite(Base):
+    """Kaggle veri seti arama sonuçları canlı/dinamik olduğu için burada yalnızca
+    kullanıcının yıldızladığı veri setlerinin meta verisi anlık görüntü olarak saklanır."""
+
+    __tablename__ = "KaggleFavorites"
+
+    DatasetRef: Mapped[str] = mapped_column(String(300), primary_key=True)
+    Title: Mapped[str] = mapped_column(String(500), nullable=False)
+    Subtitle: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    Url: Mapped[str] = mapped_column(String(500), nullable=False)
+    OwnerName: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    VoteCount: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    DownloadCount: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    LastUpdated: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    CreatedAt: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
+
+
 class IngestionRun(Base):
     __tablename__ = "IngestionRuns"
     __table_args__ = (UniqueConstraint("RunId"),)

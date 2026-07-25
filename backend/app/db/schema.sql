@@ -81,6 +81,24 @@ BEGIN
 END
 GO
 
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'KaggleFavorites')
+BEGIN
+    -- Kaggle arama sonuçları canlı/dinamik olduğu için burada yalnızca yıldızlanan
+    -- veri setlerinin meta verisi (yıldızlama anındaki hâliyle) saklanır.
+    CREATE TABLE KaggleFavorites (
+        DatasetRef    NVARCHAR(300) PRIMARY KEY,
+        Title         NVARCHAR(500) NOT NULL,
+        Subtitle      NVARCHAR(1000) NULL,
+        Url           NVARCHAR(500) NOT NULL,
+        OwnerName     NVARCHAR(200) NULL,
+        VoteCount     INT NULL,
+        DownloadCount INT NULL,
+        LastUpdated   NVARCHAR(50) NULL,
+        CreatedAt     DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
+    );
+END
+GO
+
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'IngestionRuns')
 BEGIN
     CREATE TABLE IngestionRuns (
