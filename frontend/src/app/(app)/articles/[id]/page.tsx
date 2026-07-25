@@ -19,7 +19,7 @@ export default function ArticleDetailPage({ params }: { params: { id: string } }
 
   return (
     <div>
-      <Link href="/" className="mb-6 inline-block text-sm text-brand-700 hover:underline">
+      <Link href="/dashboard" className="mb-6 inline-block text-sm text-brand-700 hover:underline">
         ← Listeye dön
       </Link>
 

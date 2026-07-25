@@ -6,8 +6,9 @@ import { useEffect, useRef, useState } from "react";
 import { Logo } from "./Logo";
 
 const SOURCE_OPTIONS = [
-  { href: "/", label: "Makale" },
+  { href: "/dashboard", label: "Makale" },
   { href: "/huggingface", label: "Hugging Face" },
+  { href: "/kaggle", label: "Kaggle" },
 ];
 
 export function Navbar() {
@@ -28,7 +29,9 @@ export function Navbar() {
   return (
     <header className="border-b border-brand-200 bg-white">
       <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
-        <Logo />
+        <Link href="/" aria-label="Ana sayfa">
+          <Logo />
+        </Link>
 
         <div ref={menuRef} className="relative">
           <button

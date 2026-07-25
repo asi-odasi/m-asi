@@ -40,7 +40,7 @@ export function ArticleDetailContent({ article, onToggleFavorite }: Props) {
           rel="noopener noreferrer"
           className="mt-5 inline-block rounded-xl bg-brand-400 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
         >
-          PDF'i Görüntüle
+          PDF&apos;i Görüntüle
         </a>
       )}
     </div>
