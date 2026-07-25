@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 54" width="220" height="54" fill="none" role="img" aria-label="m-asi logo">
+  <defs>
+    <!-- Soft Pastel Gradients -->
+    <linearGradient id="masi-pastel-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#BFDBFE"/>
+      <stop offset="50%" stop-color="#93C5FD"/>
+      <stop offset="100%" stop-color="#C4B5FD"/>
+    </linearGradient>
+    
+    <linearGradient id="masi-icon-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Minimalist Shield & Vector Emblem -->
+  <g transform="translate(3, 3)">
+    <!-- Soft Pastel Rounded Container -->
+    <rect x="0" y="0" width="48" height="48" rx="16" fill="url(#masi-pastel-bg)"/>
+    
+    <!-- Clean Minimalist Shield Contour -->
+    <path d="M24 13.5C24 13.5 16.5 15.2 16.5 21C16.5 28.2 21.8 33.5 24 35C26.2 33.5 31.5 28.2 31.5 21C31.5 15.2 24 13.5 24 13.5Z" 
+          fill="#FFFFFF" fill-opacity="0.95"/>
+    
+    <!-- Subtle Minimalist Verification Check -->
+    <path d="M20.5 24L23 26.5L27.5 21.5" 
+          stroke="url(#masi-icon-stroke)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Typography: Modern & Elegant -->
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', 'Outfit', 'Inter', 'Segoe UI', sans-serif">
+    <!-- 'm' - Soft Bold Pastel Navy -->
+    <text x="64" y="35" font-size="28" font-weight="700" fill="#1E3A8A" letter-spacing="-0.5px">m</text>
+    
+    <!-- Soft Pastel Separator Pill -->
+    <rect x="91" y="27" width="10" height="4" rx="2" fill="#93C5FD"/>
+    
+    <!-- 'asi' - Clean Minimalist Slate -->
+    <text x="107" y="35" font-size="28" font-weight="500" fill="#334155" letter-spacing="0.3px">asi</text>
+  </g>
+</svg>
