@@ -43,7 +43,7 @@ Kaggle API (canlı arama) ──────────────────
 | Veritabanı | Microsoft SQL Server (Docker) |
 | Embedding / LLM | Google Gemini (`gemini-embedding-001`) |
 
-Detaylı akış ve veritabanı şeması için [docs/architecture.md](docs/architecture.md).
+Detaylı akış ve veritabanı şeması için [docs/architecture.md](docs/architecture.md). Railway'e deploy için [docs/railway-deploy.md](docs/railway-deploy.md).
 
 ## Analizde Kullanılan Kaynaklar
 
