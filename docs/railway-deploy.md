@@ -22,7 +22,7 @@ Railway'de MS SQL Server için yerleşik (managed) bir eklenti yok, bu yüzden r
 
 > ⚠️ `Developer` edition ücretsizdir ama üretimde (production/ticari) kullanım için lisanslı değildir. Gerçek kullanıcı verisiyle canlıya çıkacaksanız Microsoft'un lisans şartlarını kontrol edin veya Azure SQL gibi lisanslı bir üretim ortamına geçmeyi değerlendirin.
 
-> **Neden özel Dockerfile?** Resmi `mcr.microsoft.com/mssql/server` imajı Railway'in kısıtlı (sandboxed) container ortamında doğrudan çalıştırıldığında `The system directory [/.system] could not be created ... Permission denied` hatasıyla çöküyor (SQL Server 2019 ve 2022'de aynı hata görüldü). `infra/mssql/Dockerfile`, bu dizini image build sırasında (tam yetkiyle) önceden oluşturup doğru sahiplik/izinle image'a gömüyor; böylece runtime'da sqlservr yeni dizin oluşturmaya çalışmıyor.
+> **Neden özel Dockerfile?** Resmi `mcr.microsoft.com/mssql/server` imajı varsayılan olarak non-root `mssql` kullanıcısıyla (uid 10001) çalışır. Railway'in bir servise bağladığı **Volume**, `/var/opt/mssql` mount noktasında bu kullanıcının yazmasına izin vermeyen bir sahiplikle geliyor; bu da `sqlservr`'ın `/.system`, `/log` gibi dizinleri oluşturamayıp "Permission denied" ile çökmesine neden oluyor. `infra/mssql/entrypoint.sh`, container'ı **root** olarak başlatıp `/var/opt/mssql`'i her açılışta `chown -R mssql:root` ile düzeltiyor, sonra `setpriv` ile (fork olmadan, PID 1 korunarak) `mssql` kullanıcısına düşüp `sqlservr`'ı çalıştırıyor. Bu, volume'ün ilk sahipliği ne olursa olsun sorunu kalıcı olarak çözüyor — lokal olarak bilerek `root:root, chmod 700` ile kilitlenmiş bir volume'e karşı test edilip doğrulandı.
 
 ## 2) `backend` servisi
 
