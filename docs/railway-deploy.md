@@ -4,15 +4,15 @@ m-asi, tek bir Railway projesi altında **3 ayrı servis** olarak deploy edilir:
 
 | Servis | Kaynak | Root directory |
 |---|---|---|
-| `mssql` | Docker Image: `mcr.microsoft.com/mssql/server:2022-latest` | — |
+| `mssql` | Bu repo (Dockerfile ile build) | `infra/mssql` |
 | `backend` | Bu repo (Dockerfile ile build) | `backend` |
 | `frontend` | Bu repo (Nixpacks, Next.js otomatik algılanır) | `frontend` |
 
-Railway'de MS SQL Server için yerleşik (managed) bir eklenti yok, bu yüzden resmi Docker imajı ayrı bir servis olarak çalıştırılıyor.
+Railway'de MS SQL Server için yerleşik (managed) bir eklenti yok, bu yüzden resmi Docker imajı `infra/mssql/Dockerfile` üzerinden özelleştirilerek ayrı bir servis olarak çalıştırılıyor.
 
 ## 1) `mssql` servisi
 
-1. Railway projesinde **New → Deploy from Docker Image** seçip `mcr.microsoft.com/mssql/server:2022-latest` gir.
+1. Railway projesinde **New → GitHub Repo** ile bu repoyu bağla, **Root Directory** = `infra/mssql`. Railway `infra/mssql/railway.json`'ı görüp Dockerfile ile build edecek.
 2. **Variables**:
    - `ACCEPT_EULA=Y`
    - `MSSQL_SA_PASSWORD=<güçlü bir şifre>`
@@ -21,6 +21,8 @@ Railway'de MS SQL Server için yerleşik (managed) bir eklenti yok, bu yüzden r
 4. Bu servise **public domain oluşturma** — backend zaten private network üzerinden erişecek.
 
 > ⚠️ `Developer` edition ücretsizdir ama üretimde (production/ticari) kullanım için lisanslı değildir. Gerçek kullanıcı verisiyle canlıya çıkacaksanız Microsoft'un lisans şartlarını kontrol edin veya Azure SQL gibi lisanslı bir üretim ortamına geçmeyi değerlendirin.
+
+> **Neden özel Dockerfile?** Resmi `mcr.microsoft.com/mssql/server` imajı Railway'in kısıtlı (sandboxed) container ortamında doğrudan çalıştırıldığında `The system directory [/.system] could not be created ... Permission denied` hatasıyla çöküyor (SQL Server 2019 ve 2022'de aynı hata görüldü). `infra/mssql/Dockerfile`, bu dizini image build sırasında (tam yetkiyle) önceden oluşturup doğru sahiplik/izinle image'a gömüyor; böylece runtime'da sqlservr yeni dizin oluşturmaya çalışmıyor.
 
 ## 2) `backend` servisi
 
