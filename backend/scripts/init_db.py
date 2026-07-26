@@ -1,4 +1,4 @@
-"""MS SQL şemasını SQLAlchemy modellerinden oluşturur (schema.sql'e alternatif).
+"""PostgreSQL şemasını SQLAlchemy modellerinden oluşturur (schema.sql'e alternatif).
 
 Kullanım:
     python scripts/init_db.py

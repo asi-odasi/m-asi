@@ -84,10 +84,10 @@ def embed_text(text: str) -> np.ndarray:
 
 
 def serialize_vector(vector: np.ndarray) -> bytes:
-    """Vektörü MS SQL VARBINARY(MAX) kolonunda saklamak için bayt dizisine çevirir."""
+    """Vektörü PostgreSQL BYTEA kolonunda saklamak için bayt dizisine çevirir."""
     return vector.astype(np.float32).tobytes()
 
 
 def deserialize_vector(data: bytes) -> np.ndarray:
-    """VARBINARY(MAX) içinden okunan bayt dizisini tekrar numpy vektörüne çevirir."""
+    """BYTEA içinden okunan bayt dizisini tekrar numpy vektörüne çevirir."""
     return np.frombuffer(data, dtype=np.float32)

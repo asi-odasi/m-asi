@@ -1,4 +1,4 @@
-"""arXiv -> Gemini Embedding -> Benzerlik Filtresi -> MS SQL akışını orkestre eden ana pipeline job'u.
+"""arXiv -> Gemini Embedding -> Benzerlik Filtresi -> PostgreSQL akışını orkestre eden ana pipeline job'u.
 
 Çalıştırma:
     python -m app.pipeline.ingest_job

@@ -1,28 +1,18 @@
 # Railway Deploy Rehberi
 
-m-asi, tek bir Railway projesi altında **3 ayrı servis** olarak deploy edilir:
+m-asi, tek bir Railway projesi altında **backend + frontend + PostgreSQL** olarak deploy edilir:
 
 | Servis | Kaynak | Root directory |
 |---|---|---|
-| `mssql` | Bu repo (Dockerfile ile build) | `infra/mssql` |
+| `Postgres` | Railway'in native managed PostgreSQL eklentisi | — |
 | `backend` | Bu repo (Dockerfile ile build) | `backend` |
 | `frontend` | Bu repo (Nixpacks, Next.js otomatik algılanır) | `frontend` |
 
-Railway'de MS SQL Server için yerleşik (managed) bir eklenti yok, bu yüzden resmi Docker imajı `infra/mssql/Dockerfile` üzerinden özelleştirilerek ayrı bir servis olarak çalıştırılıyor.
+> Not: Proje başlangıçta MS SQL Server ile tasarlanmış ve MSSQL'i Railway'de özel bir Docker servisi olarak çalıştırmayı denemiştik. Railway'in Trial planındaki sabit kaynak limitleri (500MB disk, 1GB RAM) SQL Server için yetersiz kaldığı (disk dolması, OOM) için PostgreSQL'e geçildi — Railway'in native eklentisi bu limitlere rahatça sığıyor ve ayrıca yönetilmesi gereken özel bir Dockerfile/volume-izni derdi olmuyor.
 
-## 1) `mssql` servisi
+## 1) `Postgres` eklentisi
 
-1. Railway projesinde **New → GitHub Repo** ile bu repoyu bağla, **Root Directory** = `infra/mssql`. Railway `infra/mssql/railway.json`'ı görüp Dockerfile ile build edecek.
-2. **Variables**:
-   - `ACCEPT_EULA=Y`
-   - `MSSQL_SA_PASSWORD=<güçlü bir şifre>`
-   - `MSSQL_PID=Developer`
-3. **Volume** ekle, mount path: `/var/opt/mssql` (aksi halde her redeploy'da veriler silinir).
-4. Bu servise **public domain oluşturma** — backend zaten private network üzerinden erişecek.
-
-> ⚠️ `Developer` edition ücretsizdir ama üretimde (production/ticari) kullanım için lisanslı değildir. Gerçek kullanıcı verisiyle canlıya çıkacaksanız Microsoft'un lisans şartlarını kontrol edin veya Azure SQL gibi lisanslı bir üretim ortamına geçmeyi değerlendirin.
-
-> **Neden özel Dockerfile?** Resmi `mcr.microsoft.com/mssql/server` imajı varsayılan olarak non-root `mssql` kullanıcısıyla (uid 10001) çalışır. Railway'in bir servise bağladığı **Volume**, `/var/opt/mssql` mount noktasında bu kullanıcının yazmasına izin vermeyen bir sahiplikle geliyor; bu da `sqlservr`'ın `/.system`, `/log` gibi dizinleri oluşturamayıp "Permission denied" ile çökmesine neden oluyor. `infra/mssql/entrypoint.sh`, container'ı **root** olarak başlatıp `/var/opt/mssql`'i her açılışta `chown -R mssql:root` ile düzeltiyor, sonra `setpriv` ile (fork olmadan, PID 1 korunarak) `mssql` kullanıcısına düşüp `sqlservr`'ı çalıştırıyor. Bu, volume'ün ilk sahipliği ne olursa olsun sorunu kalıcı olarak çözüyor — lokal olarak bilerek `root:root, chmod 700` ile kilitlenmiş bir volume'e karşı test edilip doğrulandı.
+1. Railway projesinde **New → Database → Add PostgreSQL** seç. Railway otomatik olarak bağlantı bilgilerini (`DATABASE_URL`, `PGHOST`, `PGPORT`, vb.) bu servisin **Variables** sekmesinde üretir — elle bir şey girmene gerek yok.
 
 ## 2) `backend` servisi
 
@@ -31,12 +21,7 @@ Railway'de MS SQL Server için yerleşik (managed) bir eklenti yok, bu yüzden r
    - `GEMINI_API_KEY=<key>`
    - `KAGGLE_USERNAME=<kullanıcı adı>`
    - `KAGGLE_KEY=<key>`
-   - `DB_SERVER=mssql.railway.internal` (Railway private network DNS adı — servis adın `mssql` değilse ona göre değiştir)
-   - `DB_PORT=1433`
-   - `DB_NAME=masi`
-   - `DB_USER=sa`
-   - `DB_PASSWORD=<mssql servisindeki MSSQL_SA_PASSWORD ile aynı>`
-   - `DB_DRIVER=ODBC Driver 18 for SQL Server`
+   - `DATABASE_URL=${{Postgres.DATABASE_URL}}` (Railway'in "variable reference" özelliğiyle Postgres eklentisinin bağlantı stringini doğrudan referans veriyoruz — DB_SERVER/DB_PORT/DB_USER/DB_PASSWORD'ü tek tek elle kopyalamaya gerek yok, bu da kopyala-yapıştır hatalarını (örn. yanlış alana yanlış değer girme) ortadan kaldırıyor)
    - `CORS_ORIGINS=https://<frontend-servisinin-domaini>.up.railway.app`
 3. **Settings → Networking → Generate Domain** ile public URL oluştur.
 4. Deploy sonrası `https://<backend-domain>/health` adresi `{"status":"ok"}` dönmeli. İlk deploy'da `entrypoint.sh`, `scripts/init_db.py` çalıştırarak tabloları otomatik oluşturur.
@@ -52,7 +37,7 @@ Railway'de MS SQL Server için yerleşik (managed) bir eklenti yok, bu yüzden r
 
 `CORS_ORIGINS` (backend) ve `NEXT_PUBLIC_API_URL` (frontend) birbirlerinin Railway domainine ihtiyaç duyar. Önerilen sıra:
 
-1. Üç servisi de oluştur, `backend` ve `frontend` için domain üret (henüz doğru env değerleri girmeden).
+1. `Postgres`, `backend`, `frontend` servislerini oluştur; `backend` ve `frontend` için domain üret (henüz `CORS_ORIGINS`/`NEXT_PUBLIC_API_URL`'i doğru girmeden).
 2. Şimdi domainleri öğrendin — `CORS_ORIGINS` ve `NEXT_PUBLIC_API_URL` değişkenlerini gerçek domainlerle güncelle.
 3. Backend ve frontend servislerini yeniden deploy et (env değişikliği otomatik redeploy tetikler).
 

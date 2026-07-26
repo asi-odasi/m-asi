@@ -33,13 +33,13 @@ class Settings(BaseSettings):
     kaggle_key: str = ""
     kaggle_default_query: str = "Turkish fake news"
 
-    # MS SQL
+    # PostgreSQL
+    database_url: str = ""
     db_server: str = "localhost"
-    db_port: int = 1433
+    db_port: int = 5432
     db_name: str = "masi"
-    db_user: str = "sa"
+    db_user: str = "postgres"
     db_password: str = ""
-    db_driver: str = "ODBC Driver 18 for SQL Server"
 
     # API
     api_host: str = "0.0.0.0"
@@ -56,16 +56,12 @@ class Settings(BaseSettings):
 
     @property
     def sqlalchemy_database_uri(self) -> str:
-        odbc = (
-            f"DRIVER={{{self.db_driver}}};"
-            f"SERVER={self.db_server},{self.db_port};"
-            f"DATABASE={self.db_name};"
-            f"UID={self.db_user};"
-            f"PWD={self.db_password};"
-            "Encrypt=yes;"
-            "TrustServerCertificate=yes;"
+        if self.database_url:
+            return self.database_url
+        return (
+            f"postgresql+psycopg2://{quote_plus(self.db_user)}:{quote_plus(self.db_password)}"
+            f"@{self.db_server}:{self.db_port}/{self.db_name}"
         )
-        return f"mssql+pyodbc:///?odbc_connect={quote_plus(odbc)}"
 
 
 @lru_cache

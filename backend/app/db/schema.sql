@@ -1,126 +1,73 @@
--- m-asi | MS SQL Server şema tanımı
+-- m-asi | PostgreSQL şema tanımı
 -- Manuel kurulum veya referans için. SQLAlchemy modelleri (models.py) ile birebir eşleşir.
+-- Uygulama bu dosyayı otomatik çalıştırmaz; tablolar scripts/init_db.py (Base.metadata.create_all) ile oluşturulur.
 
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'masi')
-BEGIN
-    CREATE DATABASE masi;
-END
-GO
+CREATE TABLE IF NOT EXISTS "Articles" (
+    "ArticleId"       BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "ArxivId"         VARCHAR(50)   NOT NULL UNIQUE,
+    "Title"           VARCHAR(1000) NOT NULL,
+    "Abstract"        TEXT          NOT NULL,
+    "Categories"      VARCHAR(200)  NULL,
+    "PublishedDate"   TIMESTAMP     NULL,
+    "UpdatedDate"     TIMESTAMP     NULL,
+    "PdfUrl"          VARCHAR(500)  NULL,
+    "SimilarityScore" DOUBLE PRECISION NULL,
+    "IsRelevant"      BOOLEAN       NOT NULL DEFAULT FALSE,
+    "IsFavorite"      BOOLEAN       NOT NULL DEFAULT FALSE,
+    "CreatedAt"       TIMESTAMP     NOT NULL DEFAULT (now() AT TIME ZONE 'utc')
+);
 
-USE masi;
-GO
+CREATE TABLE IF NOT EXISTS "Authors" (
+    "AuthorId" SERIAL PRIMARY KEY,
+    "FullName" VARCHAR(300) NOT NULL UNIQUE
+);
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Articles')
-BEGIN
-    CREATE TABLE Articles (
-        ArticleId        BIGINT IDENTITY(1,1) PRIMARY KEY,
-        ArxivId          NVARCHAR(50)   NOT NULL UNIQUE,
-        Title            NVARCHAR(1000) NOT NULL,
-        Abstract         NVARCHAR(MAX)  NOT NULL,
-        Categories       NVARCHAR(200)  NULL,
-        PublishedDate    DATETIME2      NULL,
-        UpdatedDate      DATETIME2      NULL,
-        PdfUrl           NVARCHAR(500)  NULL,
-        SimilarityScore  FLOAT          NULL,
-        IsRelevant       BIT            NOT NULL DEFAULT 0,
-        IsFavorite       BIT            NOT NULL DEFAULT 0,
-        CreatedAt        DATETIME2      NOT NULL DEFAULT SYSUTCDATETIME()
-    );
-END
-GO
+CREATE TABLE IF NOT EXISTS "ArticleAuthors" (
+    "ArticleId"   BIGINT   NOT NULL REFERENCES "Articles"("ArticleId"),
+    "AuthorId"    INTEGER  NOT NULL REFERENCES "Authors"("AuthorId"),
+    "AuthorOrder" SMALLINT NOT NULL,
+    PRIMARY KEY ("ArticleId", "AuthorId")
+);
 
--- Var olan kurulumlarda tabloyu bozmadan kolonu ekler (migration).
-IF NOT EXISTS (
-    SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Articles') AND name = 'IsFavorite'
-)
-BEGIN
-    ALTER TABLE Articles ADD IsFavorite BIT NOT NULL DEFAULT 0;
-END
-GO
+CREATE TABLE IF NOT EXISTS "ArticleEmbeddings" (
+    "EmbeddingId" BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "ArticleId"   BIGINT NOT NULL REFERENCES "Articles"("ArticleId"),
+    "ModelName"   VARCHAR(100) NOT NULL,
+    "VectorDim"   INTEGER NOT NULL,
+    "VectorData"  BYTEA NOT NULL,
+    "CreatedAt"   TIMESTAMP NOT NULL DEFAULT (now() AT TIME ZONE 'utc')
+);
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Authors')
-BEGIN
-    CREATE TABLE Authors (
-        AuthorId   INT IDENTITY(1,1) PRIMARY KEY,
-        FullName   NVARCHAR(300) NOT NULL UNIQUE
-    );
-END
-GO
+-- Hugging Face bültenleri dış kaynaklı olduğu için ID'leriyle burada yıldızlanır.
+CREATE TABLE IF NOT EXISTS "BulletinFavorites" (
+    "BulletinId" VARCHAR(100) PRIMARY KEY,
+    "CreatedAt"  TIMESTAMP NOT NULL DEFAULT (now() AT TIME ZONE 'utc')
+);
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ArticleAuthors')
-BEGIN
-    CREATE TABLE ArticleAuthors (
-        ArticleId   BIGINT NOT NULL FOREIGN KEY REFERENCES Articles(ArticleId),
-        AuthorId    INT    NOT NULL FOREIGN KEY REFERENCES Authors(AuthorId),
-        AuthorOrder SMALLINT NOT NULL,
-        PRIMARY KEY (ArticleId, AuthorId)
-    );
-END
-GO
+-- Kaggle arama sonuçları canlı/dinamik olduğu için burada yalnızca yıldızlanan
+-- veri setlerinin meta verisi (yıldızlama anındaki hâliyle) saklanır.
+CREATE TABLE IF NOT EXISTS "KaggleFavorites" (
+    "DatasetRef"    VARCHAR(300) PRIMARY KEY,
+    "Title"         VARCHAR(500) NOT NULL,
+    "Subtitle"      VARCHAR(1000) NULL,
+    "Url"           VARCHAR(500) NOT NULL,
+    "OwnerName"     VARCHAR(200) NULL,
+    "VoteCount"     INTEGER NULL,
+    "DownloadCount" INTEGER NULL,
+    "LastUpdated"   VARCHAR(50) NULL,
+    "CreatedAt"     TIMESTAMP NOT NULL DEFAULT (now() AT TIME ZONE 'utc')
+);
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ArticleEmbeddings')
-BEGIN
-    CREATE TABLE ArticleEmbeddings (
-        EmbeddingId  BIGINT IDENTITY(1,1) PRIMARY KEY,
-        ArticleId    BIGINT NOT NULL FOREIGN KEY REFERENCES Articles(ArticleId),
-        ModelName    NVARCHAR(100) NOT NULL,
-        VectorDim    INT NOT NULL,
-        VectorData   VARBINARY(MAX) NOT NULL,
-        CreatedAt    DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
-    );
-END
-GO
+CREATE TABLE IF NOT EXISTS "IngestionRuns" (
+    "RunId"         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    "StartedAt"     TIMESTAMP NOT NULL,
+    "FinishedAt"    TIMESTAMP NULL,
+    "FetchedCount"  INTEGER NOT NULL DEFAULT 0,
+    "FilteredCount" INTEGER NOT NULL DEFAULT 0,
+    "Status"        VARCHAR(20) NOT NULL,
+    "ErrorMessage"  TEXT NULL
+);
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'BulletinFavorites')
-BEGIN
-    -- Hugging Face bültenleri dış kaynaklı olduğu için ID'leriyle burada yıldızlanır.
-    CREATE TABLE BulletinFavorites (
-        BulletinId NVARCHAR(100) PRIMARY KEY,
-        CreatedAt  DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
-    );
-END
-GO
+CREATE INDEX IF NOT EXISTS "IX_Articles_IsRelevant" ON "Articles"("IsRelevant", "PublishedDate" DESC);
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'KaggleFavorites')
-BEGIN
-    -- Kaggle arama sonuçları canlı/dinamik olduğu için burada yalnızca yıldızlanan
-    -- veri setlerinin meta verisi (yıldızlama anındaki hâliyle) saklanır.
-    CREATE TABLE KaggleFavorites (
-        DatasetRef    NVARCHAR(300) PRIMARY KEY,
-        Title         NVARCHAR(500) NOT NULL,
-        Subtitle      NVARCHAR(1000) NULL,
-        Url           NVARCHAR(500) NOT NULL,
-        OwnerName     NVARCHAR(200) NULL,
-        VoteCount     INT NULL,
-        DownloadCount INT NULL,
-        LastUpdated   NVARCHAR(50) NULL,
-        CreatedAt     DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
-    );
-END
-GO
-
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'IngestionRuns')
-BEGIN
-    CREATE TABLE IngestionRuns (
-        RunId         BIGINT IDENTITY(1,1) PRIMARY KEY,
-        StartedAt     DATETIME2 NOT NULL,
-        FinishedAt    DATETIME2 NULL,
-        FetchedCount  INT NOT NULL DEFAULT 0,
-        FilteredCount INT NOT NULL DEFAULT 0,
-        Status        NVARCHAR(20) NOT NULL,
-        ErrorMessage  NVARCHAR(MAX) NULL
-    );
-END
-GO
-
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_Articles_IsRelevant')
-BEGIN
-    CREATE INDEX IX_Articles_IsRelevant ON Articles(IsRelevant, PublishedDate DESC);
-END
-GO
-
-IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_Articles_SimilarityScore')
-BEGIN
-    CREATE INDEX IX_Articles_SimilarityScore ON Articles(SimilarityScore DESC);
-END
-GO
+CREATE INDEX IF NOT EXISTS "IX_Articles_SimilarityScore" ON "Articles"("SimilarityScore" DESC);
