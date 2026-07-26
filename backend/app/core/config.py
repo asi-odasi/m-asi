@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     # arXiv
     arxiv_search_query: str = "all:disinformation"
     arxiv_max_results: int = 50
+    ingestion_interval_hours: int = 24
 
     # Hugging Face
     hf_dataset_id: str = "iletisim/dezenformasyon-bultenleri"

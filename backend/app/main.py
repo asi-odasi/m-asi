@@ -6,12 +6,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import articles, health, huggingface, kaggle
 from app.core.config import get_settings
 from app.core.logging import configure_logging
+from app.core.scheduler import start_scheduler, stop_scheduler
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     configure_logging()
+    start_scheduler()
     yield
+    stop_scheduler()
 
 
 settings = get_settings()
