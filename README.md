@@ -8,6 +8,8 @@
   [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
   [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-Embeddings-8E44AD?logo=googlegemini)](https://ai.google.dev/)
   [![Kaggle](https://img.shields.io/badge/Kaggle-API-20BEFF?logo=kaggle)](https://www.kaggle.com/docs/api)
+
+  **[Canlı demo](https://cozy-elegance-production-6340.up.railway.app/)**
 </div>
 
 ---
